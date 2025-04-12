@@ -90,8 +90,7 @@ def upload(client_id):
                         sow_text = pytesseract.image_to_string(image)
                     elif file_key == 'id_doc':
                         id_text = pytesseract.image_to_string(image)
-                        print("DEBUG333: OCR extracted from ID ->", id_text)
-                        print("DEBUG222: OCR extracted from ID ->", id_text)
+                        print("DEBUG: OCR extracted from ID ->", id_text)
                     elif file_key == 'selfie':
                         if image.size[0] < 100 or image.size[1] < 100:
                             selfie_flag = True
@@ -201,7 +200,10 @@ def new():
     return render_template('new.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+
+    port = int(os.environ.get('PORT', 5000))  # Use the PORT environment variable or default to 5000
+    app.run(host='0.0.0.0', port=port, debug=True)
 
 {
   "python.envFile": "${workspaceFolder}/.env"
