@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KYC Dashboard</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+        .high-risk {
+            color: white;
+            background-color: red;
+            font-weight: bold;
+        }
+        .medium-risk {
+            background-color: orange;
+        }
+        .low-risk {
+            background-color: lightgreen;
+        }
+        .tooltip {
+            font-size: 0.9em;
+            color: #333;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>KYC Client Submissions</h1>
+
+    <form action="/start" method="POST">
+        <input type="text" name="name" placeholder="Client Name" required>
+        <input type="email" name="email" placeholder="Client Email" required>
+        <input type="text" name="amount" placeholder="Amount (SGD)" required>
+        <button type="submit">Start KYC</button>
+    </form>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Amount</th>
+            <th>Risk</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+            <th>PDF</th>
+        </tr>
+        {% for c in clients %}
+        <tr class="{{ 'high-risk' if c[8] == 'High' else 'medium-risk' if c[8] == 'Medium' else 'low-risk' }}">
+            <td>{{ c[0] }}</td>
+            <td>{{ c[1] }}</td>
+            <td>{{ c[2] }}</td>
+            <td>{{ c[3] }}</td>
+            <td>
+                {{ c[8] }}
+                {% if c[8] != 'Low' and 'Reasons:' in c[7] %}
+                    <div class="tooltip">{{ c[7].split('Reasons:')[-1].strip() }}</div>
+                {% endif %}
+            </td>
+            <td>{{ c[4] }}</td>
+            <td>{{ c[5] }}</td>
+            <td><a href="/report/{{ c[0] }}">PDF</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
