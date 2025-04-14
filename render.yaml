@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: kyc-aml-prototype
+    env: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: python app.py
+    envVars:
+      - key: FLASK_ENV
+        value: production
