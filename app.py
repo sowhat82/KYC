@@ -7,8 +7,9 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
-
 import platform
+import requests
+import re
 
 if platform.system() == 'Windows':
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -21,7 +22,6 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 DB_NAME = 'kyc.db'
 
-# DB Setup
 def init_db():
     with sqlite3.connect(DB_NAME) as conn:
         c = conn.cursor()
@@ -84,13 +84,10 @@ def upload(client_id):
 
                 try:
                     image = Image.open(filepath)
-                    image = image.convert('L')  # Convert to grayscale
+                    image = image.convert('L')
                     image = image.filter(ImageFilter.SHARPEN)
                     image = ImageEnhance.Contrast(image).enhance(2)
-                    image = image.convert('L')  # Convert to grayscale
-                    image = image.filter(ImageFilter.SHARPEN)
-                    image = ImageEnhance.Contrast(image).enhance(2)
-    
+
                     if file_key == 'sow_doc':
                         sow_text = pytesseract.image_to_string(image)
                     elif file_key == 'id_doc':
@@ -101,12 +98,18 @@ def upload(client_id):
                             selfie_flag = True
                             risk_reason.append("Selfie image is too small (may be fake or blank)")
                 except Exception as e:
-                          if file_key == 'sow_doc': sow_text = f"OCR failed: {e}"
-                          if file_key == 'id_doc': id_text = f"OCR failed: {e}"
+                    if file_key == 'sow_doc': sow_text = f"OCR failed: {e}"
+                    if file_key == 'id_doc': id_text = f"OCR failed: {e}"
             else:
                 upload_status[file_key] = False
 
         sow_category = categorize_sow(sow_text)
+
+        with sqlite3.connect(DB_NAME) as conn:
+            c = conn.cursor()
+            c.execute("SELECT name FROM clients WHERE id=?", (client_id,))
+            form_name = c.fetchone()[0]
+
         risk_rating, risk_reason = assess_risk(sow_text, id_text, selfie_flag, sow_category, risk_reason, form_name)
 
         with sqlite3.connect(DB_NAME) as conn:
@@ -144,18 +147,46 @@ def extract_possible_name(id_text):
             return line.strip()
     return None
 
+def check_pep_status(full_name):
+    api_key = 'X5kXACRdQW3b9lJRqHxap4yTu9EkxsDy7N3rnNQf'
+    url = "https://api.dilisense.com/v1/checkIndividual"
+    params = {
+        "names": full_name,
+        "fuzzy_search": 1,
+        "includes": "dilisense_pep"
+    }
+    headers = {
+        'x-api-key': api_key
+    }
+
+    try:
+        print(f"[DEBUG] Sending to Dilisense: {full_name}")
+        response = requests.get(url, headers=headers, params=params)
+        print(f"[DEBUG] Status: {response.status_code}")
+        print(f"[DEBUG] Response: {response.text}")
+
+        if response.status_code != 200 or not response.text.strip():
+            return False, None
+
+        result = response.json()
+        matches = result.get('found_records', [])
+        if matches:
+            return True, matches
+    except Exception as e:
+        print(f"PEP API error: {e}")
+
+    return False, None
+
+
 def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log, form_name=None):
     red_flags = ['cash deposit', 'loan', 'borrowed', 'gift', 'crypto', 'cryptocurrency']
     yellow_flags = ['business income', 'sales', 'earned overseas', 'family transfer', 'remittance', 'inheritance', 'foreign source']
     watchlist_keywords = ['iran', 'islamic republic', 'republic of iran', 'tehran', 'persian', 'north korea', 'syria', 'terror', 'sanction']
 
     sow_text = sow_text.lower()
-    import re
-    id_text = re.sub(r'[^a-zA-Z ]', ' ', id_text)  # Remove special characters
-    id_text = ' '.join(id_text.split())  # Normalize whitespace
-    id_text = id_text.lower()
+    id_text = re.sub(r'[^a-zA-Z ]', ' ', id_text)
+    id_text = ' '.join(id_text.split()).lower()
 
-    # High Risk conditions
     if any(term in sow_text for term in red_flags):
         reason_log.append("SOW contains red-flag terms")
         return 'High', reason_log
@@ -170,7 +201,6 @@ def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log, form_n
         reason_log.append("Selfie failed verification checks")
         return 'High', reason_log
 
-    # Medium Risk - PEP from OCR'd ID
     name_candidate = extract_possible_name(id_text)
     if name_candidate:
         pep_hit, pep_info = check_pep_status(name_candidate)
@@ -178,14 +208,12 @@ def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log, form_n
             reason_log.append(f"PEP match from ID: {pep_info[0].get('name', 'unknown')}")
             return 'Medium', reason_log
 
-    # Medium Risk - PEP from entered name
     if form_name:
         pep_hit_manual, pep_info_manual = check_pep_status(form_name)
         if pep_hit_manual:
             reason_log.append(f"Entered name PEP match: {pep_info_manual[0].get('name', 'unknown')}")
             return 'Medium', reason_log
 
-    # Medium Risk (Yellow Flag) conditions
     if any(term in sow_text for term in yellow_flags):
         reason_log.append("SOW contains unclear or uncorroborated terms")
         return 'Medium', reason_log
@@ -194,7 +222,6 @@ def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log, form_n
         reason_log.append("SOW could not be detected")
         return 'Medium', reason_log
 
-    # Default to Low Risk
     return 'Low', reason_log
 
 def generate_pdf_report(client_id, upload_status, sow_category, sow_text, risk_rating):
@@ -202,8 +229,13 @@ def generate_pdf_report(client_id, upload_status, sow_category, sow_text, risk_r
         c = conn.cursor()
         c.execute("SELECT * FROM clients WHERE id=?", (client_id,))
         client = c.fetchone()
-        form_name = client[1]  # Assuming column 1 is the client's name
+        form_name = client[1]
+        c.execute("SELECT * FROM clients WHERE id=?", (client_id,))
+        client = c.fetchone()
 
+    form_name = client[1]
+    reason_log = []
+    risk_rating, reason_log = assess_risk(sow_text, upload_status.get('id_ocr_text', ''), upload_status.get('selfie_flag', False), sow_category, reason_log, form_name)
 
     pdf_path = f"uploads/report_{client_id}.pdf"
     c = canvas.Canvas(pdf_path, pagesize=letter)
@@ -227,6 +259,10 @@ def generate_pdf_report(client_id, upload_status, sow_category, sow_text, risk_r
     for i, line in enumerate(sow_text[:300].splitlines()):
         c.drawString(120, y - 70 - i*15, line)
 
+    c.drawString(100, y - 90 - i*15, "Reason Log:")
+    for j, reason in enumerate(reason_log):
+        c.drawString(120, y - 110 - (i+j)*15, f"- {reason}")
+
     c.save()
 
 @app.route('/report/<int:client_id>')
@@ -238,38 +274,6 @@ def report(client_id):
 def new():
     return render_template('new.html')
 
-import os
-port = int(os.environ.get("PORT", 10000))
-app.run(debug=False, host="0.0.0.0", port=port)
-
-import os
-os.system("bash render-build.sh")
-
-{
-  "python.envFile": "${workspaceFolder}/.env"
-}
-
-# Removed invalid Python code. Set FLASK_ENV in a .env file or terminal instead.
-
-import requests
-
-def check_pep_status(full_name):
-    api_key = 'X5kXACRdQW3b9lJRqHxap4yTu9EkxsDy7N3rnNQf'
-    url = 'https://api.dilisense.com/pep'
-    headers = {
-        'Authorization': f'Bearer {api_key}',
-        'Content-Type': 'application/json'
-    }
-    data = {
-        'name': full_name
-    }
-
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        result = response.json()
-        if result.get('matches'):
-            return True, result['matches']
-    except Exception as e:
-        print(f"PEP API error: {e}")
-    
-    return False, None
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(debug=False, host="0.0.0.0", port=port)
