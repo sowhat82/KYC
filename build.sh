@@ -5,5 +5,8 @@ set -o errexit
 apt-get update
 apt-get install -y tesseract-ocr
 
-pip install --upgrade pip
-pip install -r requirements.txt
+# Use the actual python environment Render uses
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+
+echo "✅ build.sh completed"
