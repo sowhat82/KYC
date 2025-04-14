@@ -138,8 +138,15 @@ def categorize_sow(text):
     else:
         return 'Other'
 
+def extract_possible_name(id_text):
+    for line in id_text.splitlines():
+        if len(line.strip().split()) >= 2:
+            return line.strip()
+    return None
+
 def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log):
     red_flags = ['cash deposit', 'loan', 'borrowed', 'gift', 'crypto', 'cryptocurrency']
+    yellow_flags = ['business income', 'sales', 'earned overseas', 'family transfer', 'remittance', 'inheritance', 'foreign source']
     watchlist_keywords = ['iran', 'islamic republic', 'republic of iran', 'tehran', 'persian', 'north korea', 'syria', 'terror', 'sanction']
 
     sow_text = sow_text.lower()
@@ -148,21 +155,38 @@ def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log):
     id_text = ' '.join(id_text.split())  # Normalize whitespace
     id_text = id_text.lower()
 
+    name_candidate = extract_possible_name(id_text)
+    if name_candidate:
+        pep_hit, pep_info = check_pep_status(name_candidate)
+        if pep_hit:
+            reason_log.append(f"PEP match found: {pep_info[0].get('name', 'unknown')}")
+            return 'Medium', reason_log
+
+    # High Risk conditions
     if any(term in sow_text for term in red_flags):
         reason_log.append("SOW contains red-flag terms")
         return 'High', reason_log
+
     for term in watchlist_keywords:
         for word in id_text.split():
             if term in word:
                 reason_log.append(f"ID contains high-risk keyword: {term}")
                 return 'High', reason_log
-            reason_log.append(f"ID contains high-risk keyword: {term}")
-            return 'High', reason_log
+
     if selfie_flag:
+        reason_log.append("Selfie failed verification checks")
         return 'High', reason_log
+
+    # Medium Risk (Yellow Flag) conditions
+    if any(term in sow_text for term in yellow_flags):
+        reason_log.append("SOW contains unclear or uncorroborated terms")
+        return 'Medium', reason_log
+
     if sow_category == 'Undetected' or sow_text.strip() == "":
         reason_log.append("SOW could not be detected")
         return 'Medium', reason_log
+
+    # Default to Low Risk
     return 'Low', reason_log
 
 def generate_pdf_report(client_id, upload_status, sow_category, sow_text, risk_rating):
@@ -208,8 +232,6 @@ import os
 port = int(os.environ.get("PORT", 10000))
 app.run(debug=False, host="0.0.0.0", port=port)
 
-
-
 import os
 os.system("bash render-build.sh")
 
@@ -218,3 +240,26 @@ os.system("bash render-build.sh")
 }
 
 # Removed invalid Python code. Set FLASK_ENV in a .env file or terminal instead.
+
+import requests
+
+def check_pep_status(full_name):
+    api_key = 'X5kXACRdQW3b9lJRqHxap4yTu9EkxsDy7N3rnNQf'
+    url = 'https://api.dilisense.com/pep'
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'name': full_name
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        result = response.json()
+        if result.get('matches'):
+            return True, result['matches']
+    except Exception as e:
+        print(f"PEP API error: {e}")
+    
+    return False, None
