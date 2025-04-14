@@ -8,7 +8,12 @@ from reportlab.pdfgen import canvas
 import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+import platform
+
+if platform.system() == 'Windows':
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+else:
+    pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
