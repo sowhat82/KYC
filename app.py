@@ -107,7 +107,7 @@ def upload(client_id):
                 upload_status[file_key] = False
 
         sow_category = categorize_sow(sow_text)
-        risk_rating, risk_reason = assess_risk(sow_text, id_text, selfie_flag, sow_category, risk_reason)
+        risk_rating, risk_reason = assess_risk(sow_text, id_text, selfie_flag, sow_category, risk_reason, form_name)
 
         with sqlite3.connect(DB_NAME) as conn:
             c = conn.cursor()
@@ -144,7 +144,7 @@ def extract_possible_name(id_text):
             return line.strip()
     return None
 
-def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log):
+def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log, form_name=None):
     red_flags = ['cash deposit', 'loan', 'borrowed', 'gift', 'crypto', 'cryptocurrency']
     yellow_flags = ['business income', 'sales', 'earned overseas', 'family transfer', 'remittance', 'inheritance', 'foreign source']
     watchlist_keywords = ['iran', 'islamic republic', 'republic of iran', 'tehran', 'persian', 'north korea', 'syria', 'terror', 'sanction']
@@ -154,13 +154,6 @@ def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log):
     id_text = re.sub(r'[^a-zA-Z ]', ' ', id_text)  # Remove special characters
     id_text = ' '.join(id_text.split())  # Normalize whitespace
     id_text = id_text.lower()
-
-    name_candidate = extract_possible_name(id_text)
-    if name_candidate:
-        pep_hit, pep_info = check_pep_status(name_candidate)
-        if pep_hit:
-            reason_log.append(f"PEP match found: {pep_info[0].get('name', 'unknown')}")
-            return 'Medium', reason_log
 
     # High Risk conditions
     if any(term in sow_text for term in red_flags):
@@ -176,6 +169,21 @@ def assess_risk(sow_text, id_text, selfie_flag, sow_category, reason_log):
     if selfie_flag:
         reason_log.append("Selfie failed verification checks")
         return 'High', reason_log
+
+    # Medium Risk - PEP from OCR'd ID
+    name_candidate = extract_possible_name(id_text)
+    if name_candidate:
+        pep_hit, pep_info = check_pep_status(name_candidate)
+        if pep_hit:
+            reason_log.append(f"PEP match from ID: {pep_info[0].get('name', 'unknown')}")
+            return 'Medium', reason_log
+
+    # Medium Risk - PEP from entered name
+    if form_name:
+        pep_hit_manual, pep_info_manual = check_pep_status(form_name)
+        if pep_hit_manual:
+            reason_log.append(f"Entered name PEP match: {pep_info_manual[0].get('name', 'unknown')}")
+            return 'Medium', reason_log
 
     # Medium Risk (Yellow Flag) conditions
     if any(term in sow_text for term in yellow_flags):
@@ -194,6 +202,8 @@ def generate_pdf_report(client_id, upload_status, sow_category, sow_text, risk_r
         c = conn.cursor()
         c.execute("SELECT * FROM clients WHERE id=?", (client_id,))
         client = c.fetchone()
+        form_name = client[1]  # Assuming column 1 is the client's name
+
 
     pdf_path = f"uploads/report_{client_id}.pdf"
     c = canvas.Canvas(pdf_path, pagesize=letter)
