@@ -204,11 +204,12 @@ def report(client_id):
 def new():
     return render_template('new.html')
 
-if __name__ == '__main__':
-    import os
+import os
 
-    port = int(os.environ.get('PORT', 5000))  # Use the PORT environment variable or default to 5000
-    app.run(host='0.0.0.0', port=port, debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
+
 
 import os
 os.system("bash render-build.sh")
