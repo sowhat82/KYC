@@ -358,42 +358,38 @@ def show_document_upload_form():
     st.markdown(f'<div class="success-box">✓ Client Information saved for <strong>{client["name"]}</strong></div>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">Please upload the required documents. Accepted formats: PNG, JPG, JPEG, PDF</div>', unsafe_allow_html=True)
 
-    # File uploaders - visible labels work better than collapsed
-    col1, col2 = st.columns(2)
+    # File uploaders in single column for better compatibility
+    st.markdown("**ID Document (Passport/National ID) ***")
+    id_doc = st.file_uploader(
+        "ID Document",
+        type=['png', 'jpg', 'jpeg', 'pdf'],
+        key="id_doc_uploader",
+        help="Upload your passport or national ID card"
+    )
 
-    with col1:
-        st.markdown("**ID Document (Passport/National ID) ***")
-        id_doc = st.file_uploader(
-            "ID Document",
-            type=['png', 'jpg', 'jpeg', 'pdf'],
-            key="id_doc_uploader",
-            help="Upload your passport or national ID card"
-        )
+    st.markdown("**Selfie Photo ***")
+    selfie = st.file_uploader(
+        "Selfie",
+        type=['png', 'jpg', 'jpeg'],
+        key="selfie_uploader",
+        help="Upload a clear photo of yourself"
+    )
 
-        st.markdown("**Selfie Photo ***")
-        selfie = st.file_uploader(
-            "Selfie",
-            type=['png', 'jpg', 'jpeg'],
-            key="selfie_uploader",
-            help="Upload a clear photo of yourself"
-        )
+    st.markdown("**Proof of Address (Utility Bill/Bank Statement) ***")
+    proof_address = st.file_uploader(
+        "Proof of Address",
+        type=['png', 'jpg', 'jpeg', 'pdf'],
+        key="proof_address_uploader",
+        help="Upload utility bill or bank statement"
+    )
 
-    with col2:
-        st.markdown("**Proof of Address (Utility Bill/Bank Statement) ***")
-        proof_address = st.file_uploader(
-            "Proof of Address",
-            type=['png', 'jpg', 'jpeg', 'pdf'],
-            key="proof_address_uploader",
-            help="Upload utility bill or bank statement"
-        )
-
-        st.markdown("**Source of Wealth Document (Payslip/Tax Return/etc.) ***")
-        sow_doc = st.file_uploader(
-            "Source of Wealth",
-            type=['png', 'jpg', 'jpeg', 'pdf'],
-            key="sow_doc_uploader",
-            help="Upload payslip, tax return, or other proof"
-        )
+    st.markdown("**Source of Wealth Document (Payslip/Tax Return/etc.) ***")
+    sow_doc = st.file_uploader(
+        "Source of Wealth",
+        type=['png', 'jpg', 'jpeg', 'pdf'],
+        key="sow_doc_uploader",
+        help="Upload payslip, tax return, or other proof"
+    )
 
     st.markdown("---")
 
