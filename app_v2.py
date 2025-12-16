@@ -398,32 +398,49 @@ def show_document_upload_form():
     if uploaded_count > 0:
         st.info(f"📎 {uploaded_count} document(s) uploaded")
 
+    # Store files in session state immediately when uploaded
+    if 'temp_files' not in st.session_state:
+        st.session_state.temp_files = {}
+
+    if id_doc:
+        st.session_state.temp_files['id_doc'] = id_doc
+    if selfie:
+        st.session_state.temp_files['selfie'] = selfie
+    if proof_address:
+        st.session_state.temp_files['proof_address'] = proof_address
+    if sow_doc:
+        st.session_state.temp_files['sow_doc'] = sow_doc
+
     # Action buttons
     col_back, col_submit = st.columns([1, 1])
 
     with col_back:
         if st.button("← Back to Client Info", key="back_button", use_container_width=True):
+            # Clear temp files
+            st.session_state.temp_files = {}
             st.session_state.current_step = 1
             st.rerun()
 
     with col_submit:
         if st.button("Submit for Verification →", key="submit_button", use_container_width=True, type="primary"):
-            # Store uploaded files
+            # Get files from session state
             files_dict = {
-                'id_doc': id_doc,
-                'selfie': selfie,
-                'proof_address': proof_address,
-                'sow_doc': sow_doc
+                'id_doc': st.session_state.temp_files.get('id_doc'),
+                'selfie': st.session_state.temp_files.get('selfie'),
+                'proof_address': st.session_state.temp_files.get('proof_address'),
+                'sow_doc': st.session_state.temp_files.get('sow_doc')
             }
 
             # Check if at least ID document is uploaded
-            if not id_doc:
+            if not files_dict['id_doc']:
                 st.error("⚠️ At minimum, please upload your ID document to proceed")
             else:
                 # Process the submission
                 with st.spinner("Processing documents and performing risk assessment..."):
                     process_kyc_submission(files_dict)
 
+                # Clear temp files after processing
+                st.session_state.temp_files = {}
                 st.session_state.current_step = 3
                 st.rerun()
 
