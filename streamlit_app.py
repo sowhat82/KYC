@@ -138,7 +138,13 @@ def extract_possible_name(id_text):
     return None
 
 def check_pep_status(full_name):
-    api_key = 'X5kXACRdQW3b9lJRqHxap4yTu9EkxsDy7N3rnNQf'
+    # Get API key from Streamlit secrets in production, or use hardcoded value for local dev
+    try:
+        api_key = st.secrets["DILISENSE_API_KEY"]
+    except:
+        # Fallback for local development
+        api_key = 'X5kXACRdQW3b9lJRqHxap4yTu9EkxsDy7N3rnNQf'
+
     url = "https://api.dilisense.com/v1/checkIndividual"
     params = {
         "names": full_name,
