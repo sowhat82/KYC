@@ -160,6 +160,8 @@ def init_session_state():
         st.session_state.client_data = {}
     if 'uploaded_files' not in st.session_state:
         st.session_state.uploaded_files = {}
+    if 'temp_files' not in st.session_state:
+        st.session_state.temp_files = {}
     if 'current_step' not in st.session_state:
         st.session_state.current_step = 1
     if 'risk_result' not in st.session_state:
@@ -171,8 +173,14 @@ init_session_state()
 
 def reset_application():
     """Reset application state for new submission."""
+    # Clear file uploader states
+    for key in ['id_doc', 'selfie', 'proof_address', 'sow_doc']:
+        if key in st.session_state:
+            del st.session_state[key]
+
     st.session_state.client_data = {}
     st.session_state.uploaded_files = {}
+    st.session_state.temp_files = {}
     st.session_state.current_step = 1
     st.session_state.risk_result = None
     st.session_state.client_id = None
@@ -360,37 +368,29 @@ def show_document_upload_form():
     st.markdown(f'<div class="success-box">✓ Client Information saved for <strong>{client["name"]}</strong></div>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">Please upload the required documents. Accepted formats: PNG, JPG, JPEG, PDF</div>', unsafe_allow_html=True)
 
-    # File uploaders in single column for better compatibility
-    st.markdown("**ID Document (Passport/National ID) ***")
+    # File uploaders - simple labels, no markdown
     id_doc = st.file_uploader(
-        "ID Document",
+        "1. ID Document (Passport/National ID) *",
         type=['png', 'jpg', 'jpeg', 'pdf'],
-        key="id_doc_uploader",
-        help="Upload your passport or national ID card"
+        key="id_doc"
     )
 
-    st.markdown("**Selfie Photo ***")
     selfie = st.file_uploader(
-        "Selfie",
+        "2. Selfie Photo *",
         type=['png', 'jpg', 'jpeg'],
-        key="selfie_uploader",
-        help="Upload a clear photo of yourself"
+        key="selfie"
     )
 
-    st.markdown("**Proof of Address (Utility Bill/Bank Statement) ***")
     proof_address = st.file_uploader(
-        "Proof of Address",
+        "3. Proof of Address (Utility Bill/Bank Statement) *",
         type=['png', 'jpg', 'jpeg', 'pdf'],
-        key="proof_address_uploader",
-        help="Upload utility bill or bank statement"
+        key="proof_address"
     )
 
-    st.markdown("**Source of Wealth Document (Payslip/Tax Return/etc.) ***")
     sow_doc = st.file_uploader(
-        "Source of Wealth",
+        "4. Source of Wealth Document (Payslip/Tax Return/etc.) *",
         type=['png', 'jpg', 'jpeg', 'pdf'],
-        key="sow_doc_uploader",
-        help="Upload payslip, tax return, or other proof"
+        key="sow_doc"
     )
 
     st.markdown("---")
@@ -400,49 +400,31 @@ def show_document_upload_form():
     if uploaded_count > 0:
         st.info(f"📎 {uploaded_count} document(s) uploaded")
 
-    # Store files in session state immediately when uploaded
-    if 'temp_files' not in st.session_state:
-        st.session_state.temp_files = {}
-
-    if id_doc:
-        st.session_state.temp_files['id_doc'] = id_doc
-    if selfie:
-        st.session_state.temp_files['selfie'] = selfie
-    if proof_address:
-        st.session_state.temp_files['proof_address'] = proof_address
-    if sow_doc:
-        st.session_state.temp_files['sow_doc'] = sow_doc
-
     # Action buttons
     col_back, col_submit = st.columns([1, 1])
 
     with col_back:
         if st.button("← Back to Client Info", key="back_button", use_container_width=True):
-            # Clear temp files
-            st.session_state.temp_files = {}
             st.session_state.current_step = 1
             st.rerun()
 
     with col_submit:
         if st.button("Submit for Verification →", key="submit_button", use_container_width=True, type="primary"):
-            # Get files from session state
+            # Get files directly from uploaders
             files_dict = {
-                'id_doc': st.session_state.temp_files.get('id_doc'),
-                'selfie': st.session_state.temp_files.get('selfie'),
-                'proof_address': st.session_state.temp_files.get('proof_address'),
-                'sow_doc': st.session_state.temp_files.get('sow_doc')
+                'id_doc': id_doc,
+                'selfie': selfie,
+                'proof_address': proof_address,
+                'sow_doc': sow_doc
             }
 
             # Check if at least ID document is uploaded
-            if not files_dict['id_doc']:
+            if not id_doc:
                 st.error("⚠️ At minimum, please upload your ID document to proceed")
             else:
                 # Process the submission
                 with st.spinner("Processing documents and performing risk assessment..."):
                     process_kyc_submission(files_dict)
-
-                # Clear temp files after processing
-                st.session_state.temp_files = {}
                 st.session_state.current_step = 3
                 st.rerun()
 
