@@ -17,8 +17,8 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Expose port
-ENV PORT=10000
-EXPOSE 10000
+ENV PORT=8501
+EXPOSE 8501
 
-# Start the app
-CMD ["python", "app.py"]
+# Start the Streamlit app
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
