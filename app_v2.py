@@ -317,8 +317,8 @@ def show_client_information_form():
                 errors.append("Please select your nationality")
             if not email or '@' not in email:
                 errors.append("Please enter a valid email address")
-            if not address or len(address.strip()) < 10:
-                errors.append("Please enter a complete address")
+            if not address or len(address.strip()) < 3:
+                errors.append("Please enter your address")
             if not occupation:
                 errors.append("Please select your occupation")
             if amount <= 0:
