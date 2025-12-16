@@ -109,19 +109,25 @@ st.markdown("""
         font-size: 1.2rem;
         text-align: center;
     }
-    /* Hide sidebar by default */
-    [data-testid="stSidebar"][aria-expanded="true"] {
-        min-width: 0px;
-        max-width: 0px;
+    /* Completely hide sidebar and navigation */
+    [data-testid="stSidebar"] {
+        display: none !important;
     }
-    [data-testid="stSidebar"][aria-expanded="false"] {
-        min-width: 0px;
-        max-width: 0px;
-        margin-left: -21rem;
+    [data-testid="collapsedControl"] {
+        display: none !important;
     }
-    /* Hide sidebar toggle button */
+    section[data-testid="stSidebar"] {
+        display: none !important;
+    }
+    .css-1d391kg {
+        display: none !important;
+    }
+    /* Hide hamburger menu button */
     button[kind="header"] {
-        display: none;
+        display: none !important;
+    }
+    [data-testid="baseButton-header"] {
+        display: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
