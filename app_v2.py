@@ -308,47 +308,49 @@ def show_client_information_form():
         # Submit button
         submitted = st.form_submit_button("Continue to Document Upload →")
 
-        if submitted:
-            # Validation
-            errors = []
-            if not name or len(name.strip()) < 2:
-                errors.append("Please enter a valid full name")
-            if not nationality:
-                errors.append("Please select your nationality")
-            if not email or '@' not in email:
-                errors.append("Please enter a valid email address")
-            if not address or len(address.strip()) < 3:
-                errors.append("Please enter your address")
-            if not occupation:
-                errors.append("Please select your occupation")
-            if amount <= 0:
-                errors.append("Transaction amount must be greater than zero")
-            if not source_of_wealth or len(source_of_wealth.strip()) < 10:
-                errors.append("Please provide a detailed source of wealth description")
-            if not purpose:
-                errors.append("Please select the purpose of transaction")
+    # Handle form submission outside the form context
+    if submitted:
+        # Validation
+        errors = []
+        if not name or len(name.strip()) < 2:
+            errors.append("Please enter a valid full name")
+        if not nationality:
+            errors.append("Please select your nationality")
+        if not email or '@' not in email:
+            errors.append("Please enter a valid email address")
+        if not address or len(address.strip()) < 3:
+            errors.append("Please enter your address")
+        if not occupation:
+            errors.append("Please select your occupation")
+        if amount <= 0:
+            errors.append("Transaction amount must be greater than zero")
+        if not source_of_wealth or len(source_of_wealth.strip()) < 3:
+            errors.append("Please provide a source of wealth description")
+        if not purpose:
+            errors.append("Please select the purpose of transaction")
 
-            if errors:
-                for error in errors:
-                    st.error(error)
-            else:
-                # Store client data in session state
-                st.session_state.client_data = {
-                    'name': name.strip(),
-                    'dob': dob.strftime('%Y-%m-%d'),
-                    'nationality': nationality,
-                    'address': address.strip(),
-                    'occupation': occupation,
-                    'email': email.strip().lower(),
-                    'amount': amount,
-                    'source_of_wealth': source_of_wealth.strip(),
-                    'purpose': purpose,
-                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                }
+        if errors:
+            st.error("**Please complete all required fields:**")
+            for error in errors:
+                st.error(f"• {error}")
+        else:
+            # Store client data in session state
+            st.session_state.client_data = {
+                'name': name.strip(),
+                'dob': dob.strftime('%Y-%m-%d'),
+                'nationality': nationality,
+                'address': address.strip(),
+                'occupation': occupation,
+                'email': email.strip().lower(),
+                'amount': amount,
+                'source_of_wealth': source_of_wealth.strip(),
+                'purpose': purpose,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
 
-                # Move to next step
-                st.session_state.current_step = 2
-                st.rerun()
+            # Move to next step
+            st.session_state.current_step = 2
+            st.rerun()
 
 def show_document_upload_form():
     """Step 2: Document upload with file validation."""
