@@ -358,56 +358,59 @@ def show_document_upload_form():
     st.markdown(f'<div class="success-box">✓ Client Information saved for <strong>{client["name"]}</strong></div>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">Please upload the required documents. Accepted formats: PNG, JPG, JPEG, PDF</div>', unsafe_allow_html=True)
 
-    with st.form("document_upload_form"):
-        col1, col2 = st.columns(2)
+    # File uploaders OUTSIDE of form (Streamlit best practice)
+    col1, col2 = st.columns(2)
 
-        with col1:
-            st.markdown("**ID Document (Passport/National ID) ***")
-            id_doc = st.file_uploader(
-                "Upload ID Document",
-                type=['png', 'jpg', 'jpeg', 'pdf'],
-                key="id_doc_uploader",
-                label_visibility="collapsed"
-            )
+    with col1:
+        st.markdown("**ID Document (Passport/National ID) ***")
+        id_doc = st.file_uploader(
+            "Upload ID Document",
+            type=['png', 'jpg', 'jpeg', 'pdf'],
+            key="id_doc_uploader",
+            label_visibility="collapsed"
+        )
 
-            st.markdown("**Selfie Photo ***")
-            selfie = st.file_uploader(
-                "Upload Selfie",
-                type=['png', 'jpg', 'jpeg'],
-                key="selfie_uploader",
-                label_visibility="collapsed"
-            )
+        st.markdown("**Selfie Photo ***")
+        selfie = st.file_uploader(
+            "Upload Selfie",
+            type=['png', 'jpg', 'jpeg'],
+            key="selfie_uploader",
+            label_visibility="collapsed"
+        )
 
-        with col2:
-            st.markdown("**Proof of Address (Utility Bill/Bank Statement) ***")
-            proof_address = st.file_uploader(
-                "Upload Proof of Address",
-                type=['png', 'jpg', 'jpeg', 'pdf'],
-                key="proof_address_uploader",
-                label_visibility="collapsed"
-            )
+    with col2:
+        st.markdown("**Proof of Address (Utility Bill/Bank Statement) ***")
+        proof_address = st.file_uploader(
+            "Upload Proof of Address",
+            type=['png', 'jpg', 'jpeg', 'pdf'],
+            key="proof_address_uploader",
+            label_visibility="collapsed"
+        )
 
-            st.markdown("**Source of Wealth Document (Payslip/Tax Return/etc.) ***")
-            sow_doc = st.file_uploader(
-                "Upload Source of Wealth Document",
-                type=['png', 'jpg', 'jpeg', 'pdf'],
-                key="sow_doc_uploader",
-                label_visibility="collapsed"
-            )
+        st.markdown("**Source of Wealth Document (Payslip/Tax Return/etc.) ***")
+        sow_doc = st.file_uploader(
+            "Upload Source of Wealth Document",
+            type=['png', 'jpg', 'jpeg', 'pdf'],
+            key="sow_doc_uploader",
+            label_visibility="collapsed"
+        )
 
-        st.markdown("---")
-        col_back, col_submit = st.columns([1, 1])
+    st.markdown("---")
 
-        with col_back:
-            back_clicked = st.form_submit_button("← Back to Client Info")
-        with col_submit:
-            submit_clicked = st.form_submit_button("Submit for Verification →")
+    # Action buttons OUTSIDE of form
+    col_back, col_submit = st.columns([1, 1])
 
-        if back_clicked:
+    with col_back:
+        if st.button("← Back to Client Info", key="back_button", use_container_width=True):
             st.session_state.current_step = 1
+            # Clear file uploader state
+            for key in ['id_doc_uploader', 'selfie_uploader', 'proof_address_uploader', 'sow_doc_uploader']:
+                if key in st.session_state:
+                    del st.session_state[key]
             st.rerun()
 
-        if submit_clicked:
+    with col_submit:
+        if st.button("Submit for Verification →", key="submit_button", use_container_width=True, type="primary"):
             # Store uploaded files
             files_dict = {
                 'id_doc': id_doc,
@@ -416,9 +419,9 @@ def show_document_upload_form():
                 'sow_doc': sow_doc
             }
 
-            # Check if at least ID and one other document is uploaded (for demo flexibility)
+            # Check if at least ID document is uploaded
             if not id_doc:
-                st.error("At minimum, please upload your ID document")
+                st.error("⚠️ At minimum, please upload your ID document to proceed")
             else:
                 # Process the submission
                 with st.spinner("Processing documents and performing risk assessment..."):
