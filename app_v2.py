@@ -210,22 +210,27 @@ def reset_application():
 def main():
     """Main application with page navigation."""
 
-    # Sidebar navigation
-    st.sidebar.title("📋 Navigation")
-    page = st.sidebar.radio(
-        "Go to",
-        ["Submit New KYC", "Admin Dashboard", "About"],
-        key="page_selector"
-    )
+    # Top navigation bar (no sidebar)
+    st.markdown('<h1 class="main-header">🔒 KYC/AML Verification System</h1>', unsafe_allow_html=True)
 
-    # Update page in session state
-    if page != st.session_state.page:
-        st.session_state.page = page
-        # Don't reset state when going to admin dashboard
-        if page == "Submit New KYC":
-            pass  # Keep state for multi-step form
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        if st.button("📝 Submit New KYC", use_container_width=True, type="primary" if st.session_state.page == "Submit New KYC" else "secondary"):
+            st.session_state.page = "Submit New KYC"
+            st.rerun()
+    with col2:
+        if st.button("📊 Admin Dashboard", use_container_width=True, type="primary" if st.session_state.page == "Admin Dashboard" else "secondary"):
+            st.session_state.page = "Admin Dashboard"
+            st.rerun()
+    with col3:
+        if st.button("ℹ️ About", use_container_width=True, type="primary" if st.session_state.page == "About" else "secondary"):
+            st.session_state.page = "About"
+            st.rerun()
+
+    st.markdown("---")
 
     # Route to appropriate page
+    page = st.session_state.page
     if page == "Submit New KYC":
         show_kyc_submission_page()
     elif page == "Admin Dashboard":
@@ -237,8 +242,6 @@ def main():
 
 def show_kyc_submission_page():
     """Multi-step KYC submission form."""
-    st.markdown('<h1 class="main-header">🔒 KYC/AML Verification System</h1>', unsafe_allow_html=True)
-
     # Progress indicator
     step_names = ["Client Information", "Document Upload", "Verification Results"]
     current = st.session_state.current_step
