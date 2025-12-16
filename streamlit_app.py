@@ -33,7 +33,7 @@ st.set_page_config(
     page_title="KYC/AML Verification System",
     page_icon="🔒",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # Custom CSS for professional styling
@@ -108,26 +108,6 @@ st.markdown("""
         font-weight: bold;
         font-size: 1.2rem;
         text-align: center;
-    }
-    /* Completely hide sidebar and navigation */
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"] {
-        display: none !important;
-    }
-    section[data-testid="stSidebar"] {
-        display: none !important;
-    }
-    .css-1d391kg {
-        display: none !important;
-    }
-    /* Hide hamburger menu button */
-    button[kind="header"] {
-        display: none !important;
-    }
-    [data-testid="baseButton-header"] {
-        display: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -210,27 +190,22 @@ def reset_application():
 def main():
     """Main application with page navigation."""
 
-    # Top navigation bar (no sidebar)
-    st.markdown('<h1 class="main-header">🔒 KYC/AML Verification System</h1>', unsafe_allow_html=True)
+    # Sidebar navigation
+    st.sidebar.title("📋 Navigation")
+    page = st.sidebar.radio(
+        "Go to",
+        ["Submit New KYC", "Admin Dashboard", "About"],
+        key="page_selector"
+    )
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("📝 Submit New KYC", use_container_width=True, type="primary" if st.session_state.page == "Submit New KYC" else "secondary"):
-            st.session_state.page = "Submit New KYC"
-            st.rerun()
-    with col2:
-        if st.button("📊 Admin Dashboard", use_container_width=True, type="primary" if st.session_state.page == "Admin Dashboard" else "secondary"):
-            st.session_state.page = "Admin Dashboard"
-            st.rerun()
-    with col3:
-        if st.button("ℹ️ About", use_container_width=True, type="primary" if st.session_state.page == "About" else "secondary"):
-            st.session_state.page = "About"
-            st.rerun()
-
-    st.markdown("---")
+    # Update page in session state
+    if page != st.session_state.page:
+        st.session_state.page = page
+        # Don't reset state when going to admin dashboard
+        if page == "Submit New KYC":
+            pass  # Keep state for multi-step form
 
     # Route to appropriate page
-    page = st.session_state.page
     if page == "Submit New KYC":
         show_kyc_submission_page()
     elif page == "Admin Dashboard":
@@ -242,6 +217,8 @@ def main():
 
 def show_kyc_submission_page():
     """Multi-step KYC submission form."""
+    st.markdown('<h1 class="main-header">🔒 KYC/AML Verification System</h1>', unsafe_allow_html=True)
+
     # Progress indicator
     step_names = ["Client Information", "Document Upload", "Verification Results"]
     current = st.session_state.current_step
