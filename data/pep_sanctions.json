@@ -1,0 +1,31 @@
+{
+  "pep_list": [
+    "Vladimir Putin",
+    "Xi Jinping",
+    "Kim Jong Un",
+    "Donald Trump",
+    "Joe Biden",
+    "Emmanuel Macron",
+    "Rishi Sunak",
+    "Narendra Modi",
+    "Recep Erdogan",
+    "Benjamin Netanyahu",
+    "Mohammed bin Salman",
+    "Jair Bolsonaro",
+    "Rodrigo Duterte",
+    "Lee Hsien Loong",
+    "Mahathir Mohamad"
+  ],
+  "sanctions_list": [
+    "Igor Sechin",
+    "Gennady Timchenko",
+    "Alisher Usmanov",
+    "Roman Abramovich",
+    "Viktor Bout",
+    "Ayman al-Zawahiri",
+    "Abu Bakr al-Baghdadi",
+    "Bashar al-Assad",
+    "Ali Khamenei",
+    "Hassan Rouhani"
+  ]
+}
