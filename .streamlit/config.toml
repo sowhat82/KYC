@@ -4,5 +4,11 @@ enableXsrfProtection = false
 enableCORS = false
 fileWatcherType = "none"
 
+[client]
+showSidebarNavigation = false
+
+[ui]
+hideTopBar = false
+
 [browser]
 gatherUsageStats = false
