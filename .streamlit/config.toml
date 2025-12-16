@@ -5,7 +5,7 @@ enableCORS = false
 fileWatcherType = "none"
 
 [client]
-showSidebarNavigation = false
+showSidebarNavigation = true
 
 [ui]
 hideTopBar = false
