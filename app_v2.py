@@ -33,7 +33,7 @@ st.set_page_config(
     page_title="KYC/AML Verification System",
     page_icon="🔒",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Custom CSS for professional styling
