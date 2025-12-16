@@ -358,55 +358,56 @@ def show_document_upload_form():
     st.markdown(f'<div class="success-box">✓ Client Information saved for <strong>{client["name"]}</strong></div>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">Please upload the required documents. Accepted formats: PNG, JPG, JPEG, PDF</div>', unsafe_allow_html=True)
 
-    # File uploaders OUTSIDE of form (Streamlit best practice)
+    # File uploaders - visible labels work better than collapsed
     col1, col2 = st.columns(2)
 
     with col1:
         st.markdown("**ID Document (Passport/National ID) ***")
         id_doc = st.file_uploader(
-            "Upload ID Document",
+            "ID Document",
             type=['png', 'jpg', 'jpeg', 'pdf'],
             key="id_doc_uploader",
-            label_visibility="collapsed"
+            help="Upload your passport or national ID card"
         )
 
         st.markdown("**Selfie Photo ***")
         selfie = st.file_uploader(
-            "Upload Selfie",
+            "Selfie",
             type=['png', 'jpg', 'jpeg'],
             key="selfie_uploader",
-            label_visibility="collapsed"
+            help="Upload a clear photo of yourself"
         )
 
     with col2:
         st.markdown("**Proof of Address (Utility Bill/Bank Statement) ***")
         proof_address = st.file_uploader(
-            "Upload Proof of Address",
+            "Proof of Address",
             type=['png', 'jpg', 'jpeg', 'pdf'],
             key="proof_address_uploader",
-            label_visibility="collapsed"
+            help="Upload utility bill or bank statement"
         )
 
         st.markdown("**Source of Wealth Document (Payslip/Tax Return/etc.) ***")
         sow_doc = st.file_uploader(
-            "Upload Source of Wealth Document",
+            "Source of Wealth",
             type=['png', 'jpg', 'jpeg', 'pdf'],
             key="sow_doc_uploader",
-            label_visibility="collapsed"
+            help="Upload payslip, tax return, or other proof"
         )
 
     st.markdown("---")
 
-    # Action buttons OUTSIDE of form
+    # Show upload status
+    uploaded_count = sum([id_doc is not None, selfie is not None, proof_address is not None, sow_doc is not None])
+    if uploaded_count > 0:
+        st.info(f"📎 {uploaded_count} document(s) uploaded")
+
+    # Action buttons
     col_back, col_submit = st.columns([1, 1])
 
     with col_back:
         if st.button("← Back to Client Info", key="back_button", use_container_width=True):
             st.session_state.current_step = 1
-            # Clear file uploader state
-            for key in ['id_doc_uploader', 'selfie_uploader', 'proof_address_uploader', 'sow_doc_uploader']:
-                if key in st.session_state:
-                    del st.session_state[key]
             st.rerun()
 
     with col_submit:
