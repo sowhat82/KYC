@@ -109,6 +109,20 @@ st.markdown("""
         font-size: 1.2rem;
         text-align: center;
     }
+    /* Hide sidebar by default */
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        min-width: 0px;
+        max-width: 0px;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] {
+        min-width: 0px;
+        max-width: 0px;
+        margin-left: -21rem;
+    }
+    /* Hide sidebar toggle button */
+    button[kind="header"] {
+        display: none;
+    }
     </style>
 """, unsafe_allow_html=True)
 
