@@ -675,13 +675,13 @@ def show_admin_dashboard():
 
     # Display clients
     for client in filtered_clients:
-        client_id = client['id']
-        name = client['name']
-        dob = client['dob']
-        nationality = client['nationality']
+        client_id = client.get('id', 'N/A')
+        name = client.get('name', 'N/A')
+        dob = client.get('dob', 'N/A')
+        nationality = client.get('nationality', 'N/A')
         address = client.get('address', 'N/A')
         occupation = client.get('occupation', 'N/A')
-        email = client['email']
+        email = client.get('email', 'N/A')
         amount = client.get('amount', 0)
         source_of_wealth = client.get('source_of_wealth', 'N/A')
         purpose = client.get('purpose', 'N/A')
