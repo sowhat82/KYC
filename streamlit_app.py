@@ -193,8 +193,7 @@ def main():
     # Sidebar navigation
     st.sidebar.title("📋 Navigation")
 
-    # Simple debug text
-    st.sidebar.write("DEBUG: This is version 2024-12-17")
+    # Instruction to hide menu
     st.sidebar.write("Click ← arrow to hide menu")
     st.sidebar.write("")
 
