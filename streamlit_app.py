@@ -193,10 +193,10 @@ def main():
     # Sidebar navigation
     st.sidebar.title("📋 Navigation")
 
-    # Add collapse instruction at the top
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("👈 **Click the arrow to hide this menu**")
-    st.sidebar.markdown("---")
+    # Simple debug text
+    st.sidebar.write("DEBUG: This is version 2024-12-17")
+    st.sidebar.write("Click ← arrow to hide menu")
+    st.sidebar.write("")
 
     page = st.sidebar.radio(
         "Go to",
