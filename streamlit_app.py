@@ -675,22 +675,29 @@ def show_admin_dashboard():
 
     # Display clients
     for client in filtered_clients:
-        client_id = client.get('id', 'N/A')
-        name = client.get('name', 'N/A')
-        dob = client.get('dob', 'N/A')
-        nationality = client.get('nationality', 'N/A')
-        address = client.get('address', 'N/A')
-        occupation = client.get('occupation', 'N/A')
-        email = client.get('email', 'N/A')
-        amount = client.get('amount', 0)
-        source_of_wealth = client.get('source_of_wealth', 'N/A')
-        purpose = client.get('purpose', 'N/A')
-        status = client.get('status', 'Pending')
-        timestamp = client.get('timestamp', 'N/A')
-        sow_category = client.get('sow_category', None)
-        risk_score = client.get('risk_score', 0)
-        risk_band = client.get('risk_band', 'N/A')
-        risk_reasons = client.get('risk_reasons', None)
+        # Safe getter that works with both Row objects and handles missing columns
+        def safe_get(row, key, default='N/A'):
+            try:
+                return row[key] if row[key] is not None else default
+            except (KeyError, IndexError, TypeError):
+                return default
+
+        client_id = safe_get(client, 'id')
+        name = safe_get(client, 'name')
+        dob = safe_get(client, 'dob')
+        nationality = safe_get(client, 'nationality')
+        address = safe_get(client, 'address')
+        occupation = safe_get(client, 'occupation')
+        email = safe_get(client, 'email')
+        amount = safe_get(client, 'amount', 0)
+        source_of_wealth = safe_get(client, 'source_of_wealth')
+        purpose = safe_get(client, 'purpose')
+        status = safe_get(client, 'status', 'Pending')
+        timestamp = safe_get(client, 'timestamp')
+        sow_category = safe_get(client, 'sow_category', None)
+        risk_score = safe_get(client, 'risk_score', 0)
+        risk_band = safe_get(client, 'risk_band')
+        risk_reasons = safe_get(client, 'risk_reasons', None)
 
         with st.expander(f"**{name}** - {email} | ID: {client_id} | {timestamp}"):
             info_col1, info_col2, info_col3 = st.columns(3)
