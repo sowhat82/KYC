@@ -622,6 +622,7 @@ def show_admin_dashboard():
 
     # Fetch all clients
     with sqlite3.connect(DB_NAME) as conn:
+        conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("SELECT * FROM clients ORDER BY timestamp DESC")
         clients = c.fetchall()
@@ -635,9 +636,9 @@ def show_admin_dashboard():
     col1, col2, col3, col4 = st.columns(4)
 
     total = len(clients)
-    completed = sum(1 for c in clients if c[10] == 'Completed')
-    pending = sum(1 for c in clients if c[10] == 'Pending')
-    high_risk = sum(1 for c in clients if c[14] == 'High')
+    completed = sum(1 for c in clients if c['status'] == 'Completed')
+    pending = sum(1 for c in clients if c['status'] == 'Pending')
+    high_risk = sum(1 for c in clients if c['risk_band'] == 'High')
 
     col1.metric("Total Applications", total)
     col2.metric("Completed", completed)
@@ -665,18 +666,31 @@ def show_admin_dashboard():
     # Apply filters
     filtered_clients = clients
     if risk_filter != "All":
-        filtered_clients = [c for c in filtered_clients if c[14] == risk_filter]
+        filtered_clients = [c for c in filtered_clients if c['risk_band'] == risk_filter]
     if status_filter != "All":
-        filtered_clients = [c for c in filtered_clients if c[10] == status_filter]
+        filtered_clients = [c for c in filtered_clients if c['status'] == status_filter]
 
     st.markdown("---")
     st.subheader(f"📋 Applications ({len(filtered_clients)} shown)")
 
     # Display clients
     for client in filtered_clients:
-        (client_id, name, dob, nationality, address, occupation, email, amount,
-         source_of_wealth, purpose, status, timestamp, sow_category,
-         risk_score, risk_band, risk_reasons) = client
+        client_id = client['id']
+        name = client['name']
+        dob = client['dob']
+        nationality = client['nationality']
+        address = client['address']
+        occupation = client['occupation']
+        email = client['email']
+        amount = client['amount']
+        source_of_wealth = client['source_of_wealth']
+        purpose = client['purpose']
+        status = client['status']
+        timestamp = client['timestamp']
+        sow_category = client['sow_category']
+        risk_score = client['risk_score']
+        risk_band = client['risk_band']
+        risk_reasons = client['risk_reasons']
 
         with st.expander(f"**{name}** - {email} | ID: {client_id} | {timestamp}"):
             info_col1, info_col2, info_col3 = st.columns(3)
