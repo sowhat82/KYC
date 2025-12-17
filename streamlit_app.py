@@ -689,13 +689,27 @@ def show_admin_dashboard():
         address = safe_get(client, 'address')
         occupation = safe_get(client, 'occupation')
         email = safe_get(client, 'email')
-        amount = safe_get(client, 'amount', 0)
+
+        # Handle amount - ensure it's a number
+        amount_raw = safe_get(client, 'amount', 0)
+        try:
+            amount = float(amount_raw) if amount_raw not in ['N/A', None] else 0.0
+        except (ValueError, TypeError):
+            amount = 0.0
+
         source_of_wealth = safe_get(client, 'source_of_wealth')
         purpose = safe_get(client, 'purpose')
         status = safe_get(client, 'status', 'Pending')
         timestamp = safe_get(client, 'timestamp')
         sow_category = safe_get(client, 'sow_category', None)
-        risk_score = safe_get(client, 'risk_score', 0)
+
+        # Handle risk_score - ensure it's a number
+        risk_score_raw = safe_get(client, 'risk_score', 0)
+        try:
+            risk_score = int(risk_score_raw) if risk_score_raw not in ['N/A', None] else 0
+        except (ValueError, TypeError):
+            risk_score = 0
+
         risk_band = safe_get(client, 'risk_band')
         risk_reasons = safe_get(client, 'risk_reasons', None)
 
