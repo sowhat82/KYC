@@ -373,29 +373,33 @@ def show_document_upload_form():
     st.markdown(f'<div class="success-box">✓ Client Information saved for <strong>{client["name"]}</strong></div>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">Please upload the required documents. Accepted formats: PNG, JPG, JPEG, PDF</div>', unsafe_allow_html=True)
 
-    # File uploaders - simple labels, no markdown
+    # File uploaders with help text
     id_doc = st.file_uploader(
         "1. ID Document (Passport/National ID) *",
         type=['png', 'jpg', 'jpeg', 'pdf'],
-        key="id_doc"
+        key="id_doc",
+        help="Upload a clear photo or scan of your passport or national ID card"
     )
 
     selfie = st.file_uploader(
         "2. Selfie Photo *",
         type=['png', 'jpg', 'jpeg'],
-        key="selfie"
+        key="selfie",
+        help="Upload a recent selfie photo holding your ID document"
     )
 
     proof_address = st.file_uploader(
         "3. Proof of Address (Utility Bill/Bank Statement) *",
         type=['png', 'jpg', 'jpeg', 'pdf'],
-        key="proof_address"
+        key="proof_address",
+        help="Upload a utility bill or bank statement showing your address (issued within last 3 months)"
     )
 
     sow_doc = st.file_uploader(
         "4. Source of Wealth Document (Payslip/Tax Return/etc.) *",
         type=['png', 'jpg', 'jpeg', 'pdf'],
-        key="sow_doc"
+        key="sow_doc",
+        help="Upload proof of income such as payslip, tax return, or bank statements"
     )
 
     st.markdown("---")
