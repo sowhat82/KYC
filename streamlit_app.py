@@ -192,6 +192,12 @@ def main():
 
     # Sidebar navigation
     st.sidebar.title("📋 Navigation")
+
+    # Add collapse instruction at the top
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("👈 **Click the arrow to hide this menu**")
+    st.sidebar.markdown("---")
+
     page = st.sidebar.radio(
         "Go to",
         ["Submit New KYC", "Admin Dashboard", "About"],
