@@ -638,7 +638,7 @@ def show_admin_dashboard():
     total = len(clients)
     completed = sum(1 for c in clients if c['status'] == 'Completed')
     pending = sum(1 for c in clients if c['status'] == 'Pending')
-    high_risk = sum(1 for c in clients if c['risk_band'] == 'High')
+    high_risk = sum(1 for c in clients if 'risk_band' in c.keys() and c['risk_band'] == 'High')
 
     col1.metric("Total Applications", total)
     col2.metric("Completed", completed)
@@ -666,7 +666,7 @@ def show_admin_dashboard():
     # Apply filters
     filtered_clients = clients
     if risk_filter != "All":
-        filtered_clients = [c for c in filtered_clients if c['risk_band'] == risk_filter]
+        filtered_clients = [c for c in filtered_clients if 'risk_band' in c.keys() and c['risk_band'] == risk_filter]
     if status_filter != "All":
         filtered_clients = [c for c in filtered_clients if c['status'] == status_filter]
 
@@ -679,18 +679,18 @@ def show_admin_dashboard():
         name = client['name']
         dob = client['dob']
         nationality = client['nationality']
-        address = client['address']
-        occupation = client['occupation']
+        address = client.get('address', 'N/A')
+        occupation = client.get('occupation', 'N/A')
         email = client['email']
-        amount = client['amount']
-        source_of_wealth = client['source_of_wealth']
-        purpose = client['purpose']
-        status = client['status']
-        timestamp = client['timestamp']
-        sow_category = client['sow_category']
-        risk_score = client['risk_score']
-        risk_band = client['risk_band']
-        risk_reasons = client['risk_reasons']
+        amount = client.get('amount', 0)
+        source_of_wealth = client.get('source_of_wealth', 'N/A')
+        purpose = client.get('purpose', 'N/A')
+        status = client.get('status', 'Pending')
+        timestamp = client.get('timestamp', 'N/A')
+        sow_category = client.get('sow_category', None)
+        risk_score = client.get('risk_score', 0)
+        risk_band = client.get('risk_band', 'N/A')
+        risk_reasons = client.get('risk_reasons', None)
 
         with st.expander(f"**{name}** - {email} | ID: {client_id} | {timestamp}"):
             info_col1, info_col2, info_col3 = st.columns(3)
